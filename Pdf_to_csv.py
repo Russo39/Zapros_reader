@@ -18,6 +18,7 @@ def pdf_to_csv(filename):
 
     while True:
         wrong_flag = False
+        zero_results_flag = False
         task_order = 1
         index_start_main_task = text.find(f'Подзапрос №{main_task_order}')
         index_end_main_task = text.find(f'Подзапрос №{main_task_order + 1}')
@@ -25,6 +26,11 @@ def pdf_to_csv(filename):
         # Если не находим Подзапрос, то break
         if index_start_main_task == -1:
                 break
+        
+        # # Проверка на отсутствие результата
+        # pattern_no_result = r"(Заказов по номеру телефона:)\s+((\+7|8)\d{10})\s+(не найдено)"
+        # check_no_result = re.search(pattern_no_result, text[index_start_main_task : index_start_main_task + 80])
+        # if check_no_result is not None: 
         
         while True:
             try:
@@ -39,9 +45,15 @@ def pdf_to_csv(filename):
                 else:
                     index_start_task = text.find(number_of_task, index_start_main_task, index_end_main_task)
                     index_end_task = text.find(next_number_of_task, index_start_main_task, index_end_main_task)   
+                
                 # Если Заказ №n не найден (выдаст индекс -1), то выход из цикла
-                if index_start_task == -1:
+                if index_start_task == -1 and task_order == 1:
+                    zero_results_flag = True
                     break
+                elif index_start_task == -1:
+                    break
+
+                
                 # Проверка для последней задачи в подзапросе
                 if index_end_task == -1 and index_end_main_task == -1:
                     index_end_task = 100000000000000000000000000
@@ -157,15 +169,22 @@ def pdf_to_csv(filename):
         try:
             pattern = r'\d+\.pdf'
             xlsx_name = f'requests\{ re.search(pattern, filename).group(0) }-Подзадача-{main_task_order}.xlsx'
-            df.to_excel(xlsx_name, index=False)
+            
+            # Если результатов нет, то в excel не выгружаем
+            if zero_results_flag == False:
+                df.to_excel(xlsx_name, index=False)
+            else:
+                wrong_flag = True    
         except Exception as e:
             wrong_flag = True
             print('Произошла ошибка, возможно, отчетный файл или подзадача безрезультативный')  
             print(e) 
 
         if not wrong_flag:
-            print(f'Успешно обработано {task_order - 1} задач в {main_task_order} подзадаче')       
-        
+            print(f'Успешно обработано {task_order - 1} задач в {main_task_order} подзадаче')
+        else:
+            print('Произошла ошибка, возможно, отчетный файл или подзадача безрезультативный')             
+
         main_task_order += 1         
     
     
