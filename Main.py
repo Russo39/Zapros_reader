@@ -1,29 +1,9 @@
 from Pdf_to_csv import pdf_to_csv
+from scan_xlsx import check_request_folder
 import os
 import sys
 from PyQt5.QtWidgets import QApplication,  QFileDialog, QWidget, QGridLayout, QListWidget, QPushButton, QLabel, QMessageBox
 from pathlib import Path
-
-
-
-# input('Нажмите ENTER чтобы начать')
-
-# def main():
-
-
-#     files_in_dir = os.listdir(r"requests")
-
-#     for file in files_in_dir:
-#         print(f'Файл {file} найден, начинаю обработку...')
-#         pdf_to_csv(file)
-
-#     print()    
-#     print(f'Обработано {len(files_in_dir)} файлов')
-
-#     input('Готово, нажмите ENTER, чтобы закрыть окно')
-
-# if __name__ == '__main__':
-#     main()
 
 
 class MainWindow(QWidget):
@@ -33,11 +13,13 @@ class MainWindow(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setWindowTitle('Zapros reader')
+        self.setWindowTitle('Конвертация запросов в excel')
         self.setGeometry(100, 100, 400, 100)
 
         layout = QGridLayout()
         self.setLayout(layout)
+
+        check_request_folder()
 
         # file selection
         self.file_browse = QPushButton('Выбрать файлы')
@@ -64,7 +46,7 @@ class MainWindow(QWidget):
         filenames, _ = QFileDialog.getOpenFileNames(
             self,
             "Select Files",
-            r"requests",
+            r"Запросы",
             "PDF (*.pdf)"
         )
         if filenames:

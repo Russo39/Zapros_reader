@@ -2,6 +2,8 @@ import fitz
 import re
 import traceback
 import pandas as pd
+from scan_xlsx import delete_single_xlsx
+from os import path
 
 
 def pdf_to_csv(filename):
@@ -9,7 +11,6 @@ def pdf_to_csv(filename):
     text = ''
     main_task_order = 1
 
-    # fullpath = f'requests\{filename}'
     fullpath = filename 
     with fitz.open(fullpath) as doc:
         for page in doc:
@@ -27,10 +28,6 @@ def pdf_to_csv(filename):
         if index_start_main_task == -1:
                 break
         
-        # # Проверка на отсутствие результата
-        # pattern_no_result = r"(Заказов по номеру телефона:)\s+((\+7|8)\d{10})\s+(не найдено)"
-        # check_no_result = re.search(pattern_no_result, text[index_start_main_task : index_start_main_task + 80])
-        # if check_no_result is not None: 
         
         while True:
             try:
@@ -73,7 +70,7 @@ def pdf_to_csv(filename):
                 pattern_abonent_number = r"(Телефон пассажира:)\s+((\+7|8)\d{10})"
                 pattern_from_destination = r'(Откуда:)\s(.+?)\|'
                 pattern_to_destination = r'(Куда:)\s(.+?)\|'
-                pattern_complete = r'(Заказ выполнен:)\s(да|нет)'
+                pattern_complete = r'(Заказ выполнен:)\s(да|нет|-)'
 
                 # Ищем cтроки регулярками
                 abonent_time_start = re.search(pattern_time_start, text[index_start_task : index_end_task])                
@@ -168,10 +165,12 @@ def pdf_to_csv(filename):
         # Формируем excel-файл xlsx
         try:
             pattern = r'\d+\.pdf'
-            xlsx_name = f'requests\{ re.search(pattern, filename).group(0) }-Подзадача-{main_task_order}.xlsx'
+            xlsx_name = f'Запросы\{ re.search(pattern, filename).group(0) }-Подзадача-{main_task_order}.xlsx'
             
             # Если результатов нет, то в excel не выгружаем
             if zero_results_flag == False:
+                if path.exists(xlsx_name):
+                    delete_single_xlsx(xlsx_name)
                 df.to_excel(xlsx_name, index=False)
             else:
                 wrong_flag = True    
